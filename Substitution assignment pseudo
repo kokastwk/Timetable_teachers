@@ -1,0 +1,61 @@
+import mysql.connector
+l = []
+s = []
+mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="mysql123",
+    database="CISCO"
+)
+mycursor = mydb.cursor()
+d = input("Enter day: ")
+k = input("Enter name of teacher: ")
+def get_absentee_details(d,k):
+
+    mycursor.execute("SELECT class,period,subject FROM periods WHERE teacher LIKE '"+ k + "' AND day LIKE '"+ d +"' ;")
+    for db in mycursor:
+        l.append(db)
+    print(l)
+    print()
+    print()
+    print("For Teacher ",k," : ")
+    print()
+    p = 0
+    for i in l:
+        p+=1
+        print(p,")","Class req. subst.: ",i[0])
+        print("    Period req. subst.: ",i[1])
+        print("    Subject req. subst.: ",i[2])
+        print()
+        print()
+get_absentee_details(d,k)
+j = 0
+for i in l:
+    j+= 1
+    mycursor.execute("SELECT DISTINCT(teacher), subject,class FROM periods WHERE class LIKE '"+ i[0] +"' AND teacher <> '"+k+"';")
+    for db in mycursor:
+        s.append(db+tuple(i[1]))
+        break
+    if(len(s)< j):
+        mycursor.execute("SELECT DISTINCT(teacher), subject,class FROM periods WHERE subject LIKE '"+ i[2] +"' AND teacher <> '"+k+"';")
+        for db in mycursor:
+            s.append(db+tuple(i[1]))
+            break
+    if(len(s)<j):
+        mycursor.execute("SELECT DISTINCT(teacher), subject,class FROM periods WHERE subject LIKE 'P.T' AND teacher <> '"+k+"';")
+        for db in mycursor:
+            s.append(db+tuple(i[1]))
+            break
+print(s)
+print()
+print()
+print("Substitutions for Teacher ",k," :")
+h = 0
+for i in s:
+    h+= 1
+    print(h, ")", "Teacher subst.: ", i[0])
+    print("    Subject of subst. teacher: ", i[1])
+    print("    Class in which subst.: ", i[2])
+    print("    Period in which subst.: ", i[3])
+    print()
+    print()
